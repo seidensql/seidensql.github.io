@@ -30,7 +30,10 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
     );
   }
 
-  if (result.columns.length === 0) {
+  const columns = result.columns ?? [];
+  const values = result.values ?? [];
+
+  if (columns.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
         Query executed successfully. No rows returned.
@@ -39,8 +42,8 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
   }
 
   const copyToClipboard = () => {
-    const header = result.columns.join('\t');
-    const rows = result.values.map(r => r.join('\t')).join('\n');
+    const header = columns.join('\t');
+    const rows = values.map(r => r.join('\t')).join('\n');
     navigator.clipboard.writeText(`${header}\n${rows}`);
     toast.success('Copied to clipboard');
   };
@@ -52,8 +55,8 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
         ? `"${s.replace(/"/g, '""')}"`
         : s;
     };
-    const header = result.columns.map(escape).join(',');
-    const rows = result.values.map(r => r.map(escape).join(',')).join('\n');
+    const header = columns.map(escape).join(',');
+    const rows = values.map(r => r.map(escape).join(',')).join('\n');
     const blob = new Blob([`${header}\n${rows}`], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -65,8 +68,8 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
   };
 
   const downloadJSON = () => {
-    const data = result.values.map(row =>
-      Object.fromEntries(result.columns.map((col, i) => [col, row[i]]))
+    const data = values.map(row =>
+      Object.fromEntries(columns.map((col, i) => [col, row[i]]))
     );
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -79,16 +82,16 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
   };
 
   // Chart data: try to find a string column for X and numeric columns for Y
-  const numericCols = result.columns.filter((_, i) =>
-    result.values.every(r => r[i] === null || typeof r[i] === 'number')
+  const numericCols = columns.filter((_, i) =>
+    values.every(r => r[i] === null || typeof r[i] === 'number')
   );
-  const labelCol = result.columns.find((_, i) =>
-    result.values.some(r => typeof r[i] === 'string')
+  const labelCol = columns.find((_, i) =>
+    values.some(r => typeof r[i] === 'string')
   );
   const canChart = numericCols.length > 0;
 
-  const chartData = result.values.slice(0, 100).map(row =>
-    Object.fromEntries(result.columns.map((col, i) => [col, row[i]]))
+  const chartData = values.slice(0, 100).map(row =>
+    Object.fromEntries(columns.map((col, i) => [col, row[i]]))
   );
 
   return (
@@ -96,7 +99,7 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
       {/* Toolbar */}
       <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border bg-muted/30">
         <span className="text-xs text-muted-foreground mr-auto">
-          {result.values.length} row{result.values.length !== 1 ? 's' : ''}
+          {values.length} row{values.length !== 1 ? 's' : ''}
         </span>
         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={copyToClipboard}>
           <Copy className="h-3 w-3 mr-1" /> Copy
@@ -136,7 +139,7 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-muted">
               <tr>
-                {result.columns.map(col => (
+                {columns.map(col => (
                   <th key={col} className="text-left px-3 py-1.5 font-medium text-foreground border-b border-border">
                     {col}
                   </th>
@@ -144,7 +147,7 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
               </tr>
             </thead>
             <tbody>
-              {result.values.map((row, i) => (
+              {values.map((row, i) => (
                 <tr key={i} className="hover:bg-accent/30 border-b border-border/50">
                   {row.map((val, j) => (
                     <td key={j} className="px-3 py-1 text-foreground font-mono">
@@ -161,7 +164,7 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
               {numericCols.length === 1 ? (
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(214.3 31.8% 91.4%)" />
-                  <XAxis dataKey={labelCol || result.columns[0]} tick={{ fontSize: 11 }} />
+                  <XAxis dataKey={labelCol || columns[0]} tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
                   <Bar dataKey={numericCols[0]} fill="hsl(222.2 47.4% 11.2%)" radius={[3, 3, 0, 0]} />
@@ -169,7 +172,7 @@ export function ResultsPanel({ result }: ResultsPanelProps) {
               ) : (
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(214.3 31.8% 91.4%)" />
-                  <XAxis dataKey={labelCol || result.columns[0]} tick={{ fontSize: 11 }} />
+                  <XAxis dataKey={labelCol || columns[0]} tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
                   {numericCols.slice(0, 5).map((col, i) => (
