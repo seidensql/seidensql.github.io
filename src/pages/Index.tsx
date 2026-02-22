@@ -166,14 +166,21 @@ export default function Index() {
   };
 
   const executeQuery = useCallback(async () => {
-    if (!activeTab || !activeDbId) return;
-    const sqlText = activeTab.sql.trim();
+    if (!activeDbId) return;
+    // Read current tab sql from state to avoid stale closure
+    let currentTab: QueryTab | undefined;
+    setTabs(prev => {
+      currentTab = prev.find(t => t.id === activeTabId);
+      return prev; // no mutation
+    });
+    if (!currentTab) return;
+    const sqlText = currentTab.sql.trim();
     if (!sqlText) return;
     const result = sqlite.execute(sqlText);
-    setResults(prev => ({ ...prev, [activeTab.id]: result }));
+    setResults(prev => ({ ...prev, [currentTab!.id]: result }));
     const entry: QueryHistoryEntry = {
       id: genId(), dbId: activeDbId, sql: sqlText,
-      executedAt: Date.now(), rowCount: result.values.length, error: result.error,
+      executedAt: Date.now(), rowCount: result.values?.length ?? 0, error: result.error,
     };
     await addHistoryEntry(entry);
     refreshHistoryAndSaved();
@@ -188,7 +195,7 @@ export default function Index() {
         }
       }
     }
-  }, [activeTab, activeDbId, sqlite, databases]);
+  }, [activeDbId, activeTabId, sqlite, databases]);
 
   const handleTableClick = (tableName: string) => {
     if (!activeTabId) return;
