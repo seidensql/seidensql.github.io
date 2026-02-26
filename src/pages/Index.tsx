@@ -104,23 +104,28 @@ export default function Index() {
       const file = input.files?.[0];
       document.body.removeChild(input);
       if (!file) return;
-      const buf = await file.arrayBuffer();
-      const data = new Uint8Array(buf);
-      await sqlite.openFile(data);
-      const db: DatabaseInfo = {
-        id: genId(),
-        name: file.name.replace(/\.(sqlite3?|db)$/i, ''),
-        data,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-      await saveDatabase(db);
-      setDatabases(prev => [...prev, db]);
-      const tab: QueryTab = { id: genId(), dbId: db.id, title: 'Query 1', sql: '' };
-      setTabs(prev => [...prev, tab]);
-      setActiveDbId(db.id);
-      setActiveTabId(tab.id);
-      toast.success(`Opened "${db.name}"`);
+      try {
+        const buf = await file.arrayBuffer();
+        const data = new Uint8Array(buf);
+        await sqlite.openFile(data);
+        const db: DatabaseInfo = {
+          id: genId(),
+          name: file.name.replace(/\.(sqlite3?|db)$/i, ''),
+          data,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+        await saveDatabase(db);
+        setDatabases(prev => [...prev, db]);
+        const tab: QueryTab = { id: genId(), dbId: db.id, title: 'Query 1', sql: '' };
+        setTabs(prev => [...prev, tab]);
+        setActiveDbId(db.id);
+        setActiveTabId(tab.id);
+        const tableCount = sqlite.schema.length;
+        toast.success(`Opened "${db.name}" (${tableCount} table${tableCount !== 1 ? 's' : ''})`);
+      } catch (err: any) {
+        toast.error(`Failed to open file: ${err?.message ?? String(err)}`);
+      }
     });
     input.click();
   };
