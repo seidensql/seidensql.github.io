@@ -45,15 +45,19 @@ export function useSqlite() {
     }
     try {
       const results = dbRef.current.exec(sql);
-      console.log('[execute] sql:', sql, '| results.length:', results.length, '| first result:', JSON.stringify(results[0]));
       if (results.length === 0) {
         // DDL or empty result
         refreshSchema();
         return { columns: [], values: [], executedAt: Date.now() };
       }
       const last = results[results.length - 1];
+      // Capture columns/values into plain JS arrays BEFORE refreshSchema runs,
+      // because sql.js reuses WASM buffers for column names and a subsequent
+      // exec() call (inside refreshSchema) would clobber last.columns.
+      const columns = Array.from(last.columns ?? []);
+      const values = (last.values ?? []).map(row => Array.from(row));
       refreshSchema();
-      return { columns: last.columns, values: last.values, executedAt: Date.now() };
+      return { columns, values, executedAt: Date.now() };
     } catch (e: any) {
       console.error('[execute] error:', e);
       return { columns: [], values: [], error: e.message ?? String(e), executedAt: Date.now() };
