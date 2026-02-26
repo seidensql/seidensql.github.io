@@ -108,6 +108,9 @@ export default function Index() {
         const buf = await file.arrayBuffer();
         const data = new Uint8Array(buf);
         await sqlite.openFile(data);
+        // Query tables directly from the loaded DB (schema state hasn't re-rendered yet)
+        const tableResult = sqlite.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
+        const tableNames = (tableResult.values ?? []).map(r => String(r[0]));
         const db: DatabaseInfo = {
           id: genId(),
           name: file.name.replace(/\.(sqlite3?|db)$/i, ''),
@@ -121,8 +124,12 @@ export default function Index() {
         setTabs(prev => [...prev, tab]);
         setActiveDbId(db.id);
         setActiveTabId(tab.id);
-        const tableCount = sqlite.schema.length;
-        toast.success(`Opened "${db.name}" (${tableCount} table${tableCount !== 1 ? 's' : ''})`);
+        if (tableNames.length === 0) {
+          toast.warning(`Opened "${db.name}" — no tables found. Is this a valid SQLite file with data?`);
+        } else {
+          const preview = tableNames.slice(0, 3).join(', ') + (tableNames.length > 3 ? '…' : '');
+          toast.success(`Opened "${db.name}" — tables: ${preview}`);
+        }
       } catch (err: any) {
         toast.error(`Failed to open file: ${err?.message ?? String(err)}`);
       }
