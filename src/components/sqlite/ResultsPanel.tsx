@@ -1,7 +1,7 @@
 import { QueryResult } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Copy, Download, TableIcon } from 'lucide-react';
+import { Copy, Download, TableIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -13,8 +13,13 @@ interface ResultsPanelProps {
 
 type ViewMode = 'table' | 'chart';
 
+const PAGE_SIZE = 200;
+
 export function ResultsPanel({ result, fontSize = 13, onFontSizeChange }: ResultsPanelProps) {
   const [view, setView] = useState<ViewMode>('table');
+  const [page, setPage] = useState(0);
+
+  useEffect(() => { setPage(0); }, [result]);
 
   if (!result) {
     return (
@@ -89,6 +94,7 @@ export function ResultsPanel({ result, fontSize = 13, onFontSizeChange }: Result
       <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border bg-muted/30">
         <span className="text-xs text-muted-foreground mr-auto">
           {values.length} row{values.length !== 1 ? 's' : ''}
+          {values.length > PAGE_SIZE && ` — page ${page + 1} of ${Math.ceil(values.length / PAGE_SIZE)}`}
         </span>
         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={copyToClipboard} title="Copy results to clipboard">
           <Copy className="h-3 w-3 mr-1" /> Copy
@@ -135,28 +141,41 @@ export function ResultsPanel({ result, fontSize = 13, onFontSizeChange }: Result
       {/* Content */}
       <div className="flex-1 overflow-auto">
         {view === 'table' ? (
-          <table className="w-full" style={{ fontSize: `${fontSize}px` }}>
-            <thead className="sticky top-0 bg-muted">
-              <tr>
-                {columns.map(col => (
-                  <th key={col} className="text-left px-3 py-1.5 font-medium text-foreground border-b border-border">
-                    {col}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {values.map((row, i) => (
-                <tr key={i} className="hover:bg-accent/30 border-b border-border/50">
-                  {row.map((val, j) => (
-                    <td key={j} className="px-3 py-1 text-foreground font-mono">
-                      {val === null ? <span className="text-muted-foreground italic">NULL</span> : String(val)}
-                    </td>
+          <>
+            <table className="w-full" style={{ fontSize: `${fontSize}px` }}>
+              <thead className="sticky top-0 bg-muted">
+                <tr>
+                  {columns.map(col => (
+                    <th key={col} className="text-left px-3 py-1.5 font-medium text-foreground border-b border-border">
+                      {col}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {values.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((row, i) => (
+                  <tr key={i} className="hover:bg-accent/30 border-b border-border/50">
+                    {row.map((val, j) => (
+                      <td key={j} className="px-3 py-1 text-foreground font-mono">
+                        {val === null ? <span className="text-muted-foreground italic">NULL</span> : String(val)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {values.length > PAGE_SIZE && (
+              <div className="flex items-center justify-center gap-2 py-2 border-t border-border bg-muted/30 text-xs text-muted-foreground">
+                <Button variant="ghost" size="sm" className="h-6 px-2" onClick={() => setPage(p => p - 1)} disabled={page === 0}>
+                  <ChevronLeft className="h-3 w-3" />
+                </Button>
+                <span>Rows {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, values.length)} of {values.length}</span>
+                <Button variant="ghost" size="sm" className="h-6 px-2" onClick={() => setPage(p => p + 1)} disabled={(page + 1) * PAGE_SIZE >= values.length}>
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="p-4 h-full min-h-[200px]">
             <ResponsiveContainer width="100%" height="100%">

@@ -27,6 +27,7 @@ import {
   PanelLeft,
   Clock,
   Copy,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -50,6 +51,7 @@ export default function Index() {
 
   const [history, setHistoryState] = useState<QueryHistoryEntry[]>([]);
   const [saved, setSaved] = useState<SavedQuery[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     listDatabases().then(dbs => {
@@ -107,6 +109,7 @@ export default function Index() {
       const file = input.files?.[0];
       document.body.removeChild(input);
       if (!file) return;
+      setUploading(true);
       try {
         const buf = await file.arrayBuffer();
         const data = new Uint8Array(buf);
@@ -135,6 +138,8 @@ export default function Index() {
         }
       } catch (err: any) {
         toast.error(`Failed to open file: ${err?.message ?? String(err)}`);
+      } finally {
+        setUploading(false);
       }
     });
     input.click();
@@ -183,16 +188,12 @@ export default function Index() {
   };
 
   const executeQuery = async () => {
-    console.log('[executeQuery] activeDbId:', activeDbId, 'activeTabId:', activeTabId);
-    console.log('[executeQuery] tabs:', JSON.stringify(tabs.map(t => ({ id: t.id, sql: t.sql.slice(0, 50) }))));
     if (!activeDbId || !activeTabId) return;
     const currentTab = tabs.find(t => t.id === activeTabId);
-    if (!currentTab) { console.log('[executeQuery] tab not found'); return; }
+    if (!currentTab) return;
     const sqlText = currentTab.sql.trim();
-    if (!sqlText) { console.log('[executeQuery] sql is empty'); return; }
-    console.log('[executeQuery] executing:', sqlText);
+    if (!sqlText) return;
     const result = sqlite.execute(sqlText);
-    console.log('[executeQuery] result:', JSON.stringify({ columns: result.columns, rowCount: result.values?.length, error: result.error }));
     setResults(prev => ({ ...prev, [currentTab.id]: result }));
     const entry: QueryHistoryEntry = {
       id: genId(), dbId: activeDbId, sql: sqlText,
@@ -272,8 +273,8 @@ export default function Index() {
         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={createNewDatabase}>
           <Plus className="h-3 w-3 mr-1" /> New
         </Button>
-        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={uploadDatabase}>
-          <Upload className="h-3 w-3 mr-1" /> Open
+        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={uploadDatabase} disabled={uploading}>
+          {uploading ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Upload className="h-3 w-3 mr-1" />} Open
         </Button>
         <span className="text-xs text-muted-foreground italic px-2">Because SQL just wants to be friends with you.</span>
         <div className="ml-auto flex items-center gap-1">
@@ -325,7 +326,7 @@ export default function Index() {
                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => { navigator.clipboard.writeText(activeTab?.sql ?? ''); toast.success('Query copied'); }} title="Copy query to clipboard" disabled={!activeTab?.sql.trim()}>
                     <Copy className="h-3 w-3" />
                   </Button>
-                  <Button size="sm" className="h-7 text-xs" onClick={executeQuery} disabled={!activeTab?.sql.trim()}>
+                  <Button size="sm" className="h-7 text-xs" onClick={executeQuery} disabled={!activeTab?.sql.trim()} title="Run query (Ctrl+Enter)">
                     <Play className="h-3 w-3 mr-1" /> Run
                   </Button>
                 </div>
