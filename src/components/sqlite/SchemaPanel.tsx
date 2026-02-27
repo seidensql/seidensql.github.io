@@ -17,7 +17,7 @@ export function SchemaPanel({ schema, onTableClick }: SchemaPanelProps) {
   if (schema.length === 0) {
     return (
       <div className="p-3 text-sm text-muted-foreground">
-        No tables yet. Run a CREATE TABLE statement to get started.
+        No tables currently available.
       </div>
     );
   }
