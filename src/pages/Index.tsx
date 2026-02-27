@@ -342,7 +342,7 @@ export default function Index() {
                     </TooltipTrigger>
                     <TooltipContent className="text-center">
                       <p>Run Query</p>
-                      <p>(Cmd-Enter)</p>
+                      <p>(CTRL-Enter)</p>
                       <p>(⌘-Return)</p>
                     </TooltipContent>
                   </Tooltip>
