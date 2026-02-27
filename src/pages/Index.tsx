@@ -45,7 +45,8 @@ export default function Index() {
 
   const [showSchema, setShowSchema] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
-  const [fontSize, setFontSize] = useState(13);
+  const [editorFontSize, setEditorFontSize] = useState(13);
+  const [outputFontSize, setOutputFontSize] = useState(13);
 
   const [history, setHistoryState] = useState<QueryHistoryEntry[]>([]);
   const [saved, setSaved] = useState<SavedQuery[]>([]);
@@ -317,8 +318,14 @@ export default function Index() {
                   <Plus className="h-3 w-3" />
                 </button>
                 <div className="ml-auto pr-2 flex items-center gap-1">
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setFontSize(s => Math.max(10, s - 1))} title="Decrease font size">A-</Button>
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setFontSize(s => Math.min(20, s + 1))} title="Increase font size">A+</Button>
+                  <span className="text-[10px] text-muted-foreground px-0.5">SQL</span>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setEditorFontSize(s => Math.max(10, s - 1))} title="Decrease query font size">A-</Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setEditorFontSize(s => Math.min(20, s + 1))} title="Increase query font size">A+</Button>
+                  <div className="w-px h-4 bg-border mx-0.5" />
+                  <span className="text-[10px] text-muted-foreground px-0.5">Out</span>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setOutputFontSize(s => Math.max(10, s - 1))} title="Decrease output font size">A-</Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setOutputFontSize(s => Math.min(20, s + 1))} title="Increase output font size">A+</Button>
+                  <div className="w-px h-4 bg-border mx-0.5" />
                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => { navigator.clipboard.writeText(activeTab?.sql ?? ''); toast.success('Query copied'); }} title="Copy query to clipboard" disabled={!activeTab?.sql.trim()}>
                     <Copy className="h-3 w-3" />
                   </Button>
@@ -329,11 +336,11 @@ export default function Index() {
               </div>
               <div className="h-[40%] min-h-[120px] border-b border-border">
                 {activeTab && (
-                  <QueryEditor value={activeTab.sql} onChange={updateTabSql} onExecute={executeQuery} error={currentResult?.error} fontSize={fontSize} />
+                  <QueryEditor value={activeTab.sql} onChange={updateTabSql} onExecute={executeQuery} error={currentResult?.error} fontSize={editorFontSize} />
                 )}
               </div>
               <div className="flex-1 overflow-hidden">
-                <ResultsPanel result={currentResult} fontSize={fontSize} />
+                <ResultsPanel result={currentResult} fontSize={outputFontSize} />
               </div>
             </>
           ) : (
