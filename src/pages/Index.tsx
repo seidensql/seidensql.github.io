@@ -17,6 +17,7 @@ import {
 } from '@/lib/db-storage';
 import type { DatabaseInfo, QueryResult, QueryTab, QueryHistoryEntry, SavedQuery } from '@/lib/types';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Plus,
   Upload,
@@ -333,9 +334,18 @@ export default function Index() {
                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => { navigator.clipboard.writeText(activeTab?.sql ?? ''); toast.success('Query copied'); }} title="Copy query to clipboard" disabled={!activeTab?.sql.trim()}>
                     <Copy className="h-3 w-3" />
                   </Button>
-                  <Button size="sm" className="h-7 text-xs" onClick={executeQuery} disabled={!activeTab?.sql.trim()} title="Run query (Ctrl+Enter)">
-                    <Play className="h-3 w-3 mr-1" /> Run
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="sm" className="h-7 text-xs" onClick={executeQuery} disabled={!activeTab?.sql.trim()}>
+                        <Play className="h-3 w-3 mr-1" /> Run
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent className="text-center">
+                      <p>Run Query</p>
+                      <p>(Cmd-Enter)</p>
+                      <p>(⌘-Return)</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
               <div className="h-[40%] min-h-[120px] border-b border-border">
