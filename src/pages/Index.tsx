@@ -28,8 +28,11 @@ import {
   Clock,
   Copy,
   Loader2,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTheme } from 'next-themes';
 
 function genId() {
   return Math.random().toString(36).slice(2, 10);
@@ -39,6 +42,7 @@ export default function Index() {
   const [databases, setDatabases] = useState<DatabaseInfo[]>([]);
   const [activeDbId, setActiveDbId] = useState<string | null>(null);
   const sqlite = useSqlite();
+  const { theme, setTheme } = useTheme();
 
   const [tabs, setTabs] = useState<QueryTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
@@ -278,6 +282,9 @@ export default function Index() {
         </Button>
         <span className="text-xs text-muted-foreground italic px-2">Because SQL just wants to be friends with you.</span>
         <div className="ml-auto flex items-center gap-1">
+          <Button variant="ghost" size="sm" className="h-7" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Toggle dark mode">
+            {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+          </Button>
           <Button variant="ghost" size="sm" className="h-7" onClick={() => setShowSchema(s => !s)}>
             {showSchema ? <PanelLeftClose className="h-3.5 w-3.5" /> : <PanelLeft className="h-3.5 w-3.5" />}
           </Button>
