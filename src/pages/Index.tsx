@@ -221,7 +221,7 @@ export default function Index() {
 
   const handleTableClick = (tableName: string) => {
     if (!activeTabId) return;
-    updateTabSql(`SELECT * FROM ${tableName} LIMIT 100;`);
+    updateTabSql(`SELECT * FROM ${tableName};`);
   };
 
   const handleSaveQuery = (sqlText: string) => {
