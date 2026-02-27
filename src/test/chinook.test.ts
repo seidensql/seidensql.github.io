@@ -3,45 +3,45 @@ import initSqlJs, { Database } from 'sql.js';
 
 // Minimal Chinook schema + sample data for query testing
 const CHINOOK_DDL = `
-CREATE TABLE Genre (
+CREATE TABLE Genres (
   GenreId   INTEGER PRIMARY KEY,
   Name      TEXT
 );
-CREATE TABLE MediaType (
+CREATE TABLE media_types (
   MediaTypeId INTEGER PRIMARY KEY,
   Name        TEXT
 );
-CREATE TABLE Artist (
+CREATE TABLE Artists (
   ArtistId INTEGER PRIMARY KEY,
   Name     TEXT
 );
-CREATE TABLE Album (
+CREATE TABLE Albums (
   AlbumId  INTEGER PRIMARY KEY,
   Title    TEXT,
-  ArtistId INTEGER REFERENCES Artist(ArtistId)
+  ArtistId INTEGER REFERENCES Artists(ArtistId)
 );
-CREATE TABLE Track (
+CREATE TABLE Tracks (
   TrackId     INTEGER PRIMARY KEY,
   Name        TEXT,
-  AlbumId     INTEGER REFERENCES Album(AlbumId),
-  MediaTypeId INTEGER REFERENCES MediaType(MediaTypeId),
-  GenreId     INTEGER REFERENCES Genre(GenreId),
+  AlbumId     INTEGER REFERENCES Albums(AlbumId),
+  MediaTypeId INTEGER REFERENCES media_types(MediaTypeId),
+  GenreId     INTEGER REFERENCES Genres(GenreId),
   Composer    TEXT,
   Milliseconds INTEGER,
   Bytes       INTEGER,
   UnitPrice   REAL
 );
-CREATE TABLE Employee (
+CREATE TABLE Employees (
   EmployeeId INTEGER PRIMARY KEY,
   LastName   TEXT,
   FirstName  TEXT,
   Title      TEXT,
-  ReportsTo  INTEGER REFERENCES Employee(EmployeeId),
+  ReportsTo  INTEGER REFERENCES Employees(EmployeeId),
   City       TEXT,
   Country    TEXT,
   Email      TEXT
 );
-CREATE TABLE Customer (
+CREATE TABLE Customers (
   CustomerId   INTEGER PRIMARY KEY,
   FirstName    TEXT,
   LastName     TEXT,
@@ -49,41 +49,41 @@ CREATE TABLE Customer (
   City         TEXT,
   Country      TEXT,
   Email        TEXT,
-  SupportRepId INTEGER REFERENCES Employee(EmployeeId)
+  SupportRepId INTEGER REFERENCES Employees(EmployeeId)
 );
-CREATE TABLE Invoice (
+CREATE TABLE Invoices (
   InvoiceId      INTEGER PRIMARY KEY,
-  CustomerId     INTEGER REFERENCES Customer(CustomerId),
+  CustomerId     INTEGER REFERENCES Customers(CustomerId),
   InvoiceDate    TEXT,
   BillingCity    TEXT,
   BillingCountry TEXT,
   Total          REAL
 );
-CREATE TABLE InvoiceLine (
+CREATE TABLE invoice_items (
   InvoiceLineId INTEGER PRIMARY KEY,
-  InvoiceId     INTEGER REFERENCES Invoice(InvoiceId),
-  TrackId       INTEGER REFERENCES Track(TrackId),
+  InvoiceId     INTEGER REFERENCES Invoices(InvoiceId),
+  TrackId       INTEGER REFERENCES Tracks(TrackId),
   UnitPrice     REAL,
   Quantity      INTEGER
 );
-CREATE TABLE Playlist (
+CREATE TABLE Playlists (
   PlaylistId INTEGER PRIMARY KEY,
   Name       TEXT
 );
-CREATE TABLE PlaylistTrack (
-  PlaylistId INTEGER REFERENCES Playlist(PlaylistId),
-  TrackId    INTEGER REFERENCES Track(TrackId),
+CREATE TABLE playlist_track (
+  PlaylistId INTEGER REFERENCES Playlists(PlaylistId),
+  TrackId    INTEGER REFERENCES Tracks(TrackId),
   PRIMARY KEY (PlaylistId, TrackId)
 );
 `;
 
 const CHINOOK_DATA = `
-INSERT INTO Genre VALUES (1,'Rock'),(2,'Jazz'),(3,'Metal'),(4,'Alternative & Punk'),(5,'Classical');
-INSERT INTO MediaType VALUES (1,'MPEG audio file'),(2,'Protected AAC audio file'),(3,'AAC audio file');
-INSERT INTO Artist VALUES
+INSERT INTO Genres VALUES (1,'Rock'),(2,'Jazz'),(3,'Metal'),(4,'Alternative & Punk'),(5,'Classical');
+INSERT INTO media_types VALUES (1,'MPEG audio file'),(2,'Protected AAC audio file'),(3,'AAC audio file');
+INSERT INTO Artists VALUES
   (1,'AC/DC'),(2,'Accept'),(3,'Aerosmith'),(4,'Alanis Morissette'),
   (5,'Alice In Chains'),(6,'Miles Davis'),(7,'Bach, Johann Sebastian');
-INSERT INTO Album VALUES
+INSERT INTO Albums VALUES
   (1,'For Those About To Rock We Salute You',1),
   (2,'Balls to the Wall',2),
   (3,'Restless and Wild',2),
@@ -93,7 +93,7 @@ INSERT INTO Album VALUES
   (7,'Facelift',5),
   (8,'Kind of Blue',6),
   (9,'The Goldberg Variations',7);
-INSERT INTO Track VALUES
+INSERT INTO Tracks VALUES
   (1,'For Those About To Rock (We Salute You)',1,1,1,'Angus Young',343719,11170334,0.99),
   (2,'Balls to the Wall',2,2,1,NULL,342562,5510424,0.99),
   (3,'Fast As a Shark',3,2,1,'F. Baltes',230619,3990994,0.99),
@@ -112,12 +112,12 @@ INSERT INTO Track VALUES
   (16,'So What',8,1,2,'Miles Davis',548784,17191596,0.99),
   (17,'Freddie Freeloader',8,1,2,'Miles Davis',569769,18065859,0.99),
   (18,'Aria',9,3,5,'Johann Sebastian Bach',306720,9578140,0.99);
-INSERT INTO Employee VALUES
+INSERT INTO Employees VALUES
   (1,'Adams','Andrew','General Manager',NULL,'Edmonton','Canada','andrew@chinookcorp.com'),
   (2,'Edwards','Nancy','Sales Manager',1,'Calgary','Canada','nancy@chinookcorp.com'),
   (3,'Peacock','Jane','Sales Support Agent',2,'Calgary','Canada','jane@chinookcorp.com'),
   (4,'Park','Margaret','Sales Support Agent',2,'Calgary','Canada','margaret@chinookcorp.com');
-INSERT INTO Customer VALUES
+INSERT INTO Customers VALUES
   (1,'Luís','Gonçalves','Embraer','São José dos Campos','Brazil','luisg@embraer.com.br',3),
   (2,'Leonie','Köhler',NULL,'Stuttgart','Germany','leonekohler@surfeu.de',3),
   (3,'François','Tremblay',NULL,'Montréal','Canada','ftremblay@gmail.com',3),
@@ -128,7 +128,7 @@ INSERT INTO Customer VALUES
   (8,'Daan','Peeters',NULL,'Brussels','Belgium','daan_peeters@apple.be',4),
   (9,'Kara','Nielsen',NULL,'Copenhagen','Denmark','kara.nielsen@jubii.dk',4),
   (10,'Eduardo','Martins','Woodstock Discos','São Paulo','Brazil','eduardo@woodstock.com.br',4);
-INSERT INTO Invoice VALUES
+INSERT INTO Invoices VALUES
   (1,2,'2009-01-01','Stuttgart','Germany',1.98),
   (2,4,'2009-01-02','Oslo','Norway',3.96),
   (3,8,'2009-01-03','Brussels','Belgium',5.94),
@@ -144,7 +144,7 @@ INSERT INTO Invoice VALUES
   (13,3,'2009-11-13','Montréal','Canada',8.91),
   (14,4,'2010-01-23','Oslo','Norway',21.86),
   (15,5,'2010-03-11','Prague','Czech Republic',3.96);
-INSERT INTO InvoiceLine VALUES
+INSERT INTO invoice_items VALUES
   (1,1,2,0.99,1),(2,1,4,0.99,1),
   (3,2,6,0.99,1),(4,2,8,0.99,1),(5,2,10,0.99,1),(6,2,12,0.99,1),
   (7,3,16,0.99,1),(8,3,17,0.99,1),(9,3,1,0.99,1),(10,3,3,0.99,1),(11,3,5,0.99,1),(12,3,7,0.99,1),
@@ -154,8 +154,8 @@ INSERT INTO InvoiceLine VALUES
   (27,12,1,0.99,1),(28,12,3,0.99,1),(29,12,5,0.99,1),(30,12,7,0.99,1),(31,12,9,0.99,1),(32,12,11,0.99,1),(33,12,13,0.99,1),(34,12,15,0.99,1),(35,12,17,0.99,1),(36,12,2,0.99,1),(37,12,4,0.99,1),(38,12,6,0.99,1),(39,12,8,0.99,1),(40,12,10,0.99,1),
   (41,13,1,0.99,1),(42,13,3,0.99,1),(43,13,5,0.99,1),(44,13,7,0.99,1),(45,13,9,0.99,1),(46,13,11,0.99,1),(47,13,13,0.99,1),(48,13,15,0.99,1),(49,13,17,0.99,1),
   (50,14,1,0.99,1),(51,14,3,0.99,1),(52,14,5,0.99,1),(53,14,7,0.99,1),(54,14,9,0.99,1),(55,14,11,0.99,1),(56,14,13,0.99,1),(57,14,15,0.99,1),(58,14,17,0.99,1),(59,14,2,0.99,1),(60,14,4,0.99,1),(61,14,6,0.99,1),(62,14,8,0.99,1),(63,14,10,0.99,1),(64,14,12,0.99,1),(65,14,14,0.99,1),(66,14,16,0.99,1),(67,14,18,0.99,1),(68,14,16,0.99,1),(69,14,18,0.99,1),(70,14,17,0.99,1),(71,14,1,0.99,1),(72,14,2,0.99,1);
-INSERT INTO Playlist VALUES (1,'Music'),(2,'Movies'),(3,'TV Shows'),(4,'Audiobooks'),(5,'90s Music');
-INSERT INTO PlaylistTrack VALUES
+INSERT INTO Playlists VALUES (1,'Music'),(2,'Movies'),(3,'TV Shows'),(4,'Audiobooks'),(5,'90s Music');
+INSERT INTO playlist_track VALUES
   (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),
   (1,11),(1,12),(1,13),(1,14),(1,15),(1,16),(1,17),(1,18),
   (5,11),(5,12),(5,13);
@@ -190,40 +190,40 @@ function cols(sql: string): string[] {
 
 describe('Chinook – basic selects', () => {
   it('lists all genres', () => {
-    const result = rows('SELECT Name FROM Genre ORDER BY GenreId');
+    const result = rows('SELECT Name FROM Genres ORDER BY GenreId');
     expect(result).toEqual([['Rock'], ['Jazz'], ['Metal'], ['Alternative & Punk'], ['Classical']]);
   });
 
   it('counts artists', () => {
-    const [[count]] = rows('SELECT COUNT(*) FROM Artist');
+    const [[count]] = rows('SELECT COUNT(*) FROM Artists');
     expect(count).toBe(7);
   });
 
-  it('returns correct columns for Track', () => {
-    const columns = cols('SELECT * FROM Track LIMIT 1');
+  it('returns correct columns for Tracks', () => {
+    const columns = cols('SELECT * FROM Tracks LIMIT 1');
     expect(columns).toContain('TrackId');
     expect(columns).toContain('Name');
     expect(columns).toContain('UnitPrice');
   });
 
   it('filters tracks by genre (Rock = 1)', () => {
-    const result = rows('SELECT COUNT(*) FROM Track WHERE GenreId = 1');
+    const result = rows('SELECT COUNT(*) FROM Tracks WHERE GenreId = 1');
     expect(result[0][0]).toBeGreaterThan(0);
   });
 
   it('finds tracks with no composer (NULL)', () => {
-    const result = rows('SELECT Name FROM Track WHERE Composer IS NULL');
+    const result = rows('SELECT Name FROM Tracks WHERE Composer IS NULL');
     expect(result.length).toBeGreaterThan(0);
     expect(result.map((r) => r[0])).toContain('Balls to the Wall');
   });
 });
 
 describe('Chinook – joins', () => {
-  it('joins Album → Artist', () => {
+  it('joins Albums → Artists', () => {
     const result = rows(`
       SELECT al.Title, ar.Name
-      FROM Album al
-      JOIN Artist ar ON ar.ArtistId = al.ArtistId
+      FROM Albums al
+      JOIN Artists ar ON ar.ArtistId = al.ArtistId
       WHERE ar.Name = 'AC/DC'
       ORDER BY al.AlbumId
     `);
@@ -231,12 +231,12 @@ describe('Chinook – joins', () => {
     expect(result[0][0]).toBe('For Those About To Rock We Salute You');
   });
 
-  it('joins Track → Album → Artist', () => {
+  it('joins Tracks → Albums → Artists', () => {
     const result = rows(`
       SELECT t.Name, al.Title, ar.Name
-      FROM Track t
-      JOIN Album al ON al.AlbumId = t.AlbumId
-      JOIN Artist ar ON ar.ArtistId = al.ArtistId
+      FROM Tracks t
+      JOIN Albums al ON al.AlbumId = t.AlbumId
+      JOIN Artists ar ON ar.ArtistId = al.ArtistId
       WHERE ar.Name = 'Alanis Morissette'
       ORDER BY t.TrackId
     `);
@@ -244,21 +244,21 @@ describe('Chinook – joins', () => {
     expect(result.map((r) => r[0])).toContain('You Oughta Know');
   });
 
-  it('joins Track → Genre', () => {
+  it('joins Tracks → Genres', () => {
     const result = rows(`
       SELECT t.Name, g.Name AS Genre
-      FROM Track t
-      JOIN Genre g ON g.GenreId = t.GenreId
+      FROM Tracks t
+      JOIN Genres g ON g.GenreId = t.GenreId
       WHERE g.Name = 'Jazz'
     `);
     expect(result.length).toBe(2);
   });
 
-  it('joins Invoice → Customer', () => {
+  it('joins Invoices → Customers', () => {
     const result = rows(`
       SELECT c.FirstName || ' ' || c.LastName AS Customer, i.Total
-      FROM Invoice i
-      JOIN Customer c ON c.CustomerId = i.CustomerId
+      FROM Invoices i
+      JOIN Customers c ON c.CustomerId = i.CustomerId
       WHERE i.Total > 10
       ORDER BY i.Total DESC
     `);
@@ -266,12 +266,12 @@ describe('Chinook – joins', () => {
     expect(result[0][1]).toBeGreaterThan(10);
   });
 
-  it('joins InvoiceLine → Track → Album', () => {
+  it('joins invoice_items → Tracks → Albums', () => {
     const result = rows(`
       SELECT il.InvoiceLineId, t.Name, al.Title
-      FROM InvoiceLine il
-      JOIN Track t ON t.TrackId = il.TrackId
-      JOIN Album al ON al.AlbumId = t.AlbumId
+      FROM invoice_items il
+      JOIN Tracks t ON t.TrackId = il.TrackId
+      JOIN Albums al ON al.AlbumId = t.AlbumId
       ORDER BY il.InvoiceLineId
       LIMIT 5
     `);
@@ -279,23 +279,23 @@ describe('Chinook – joins', () => {
     expect(result[0].length).toBe(3);
   });
 
-  it('left joins Customer → Invoice (all customers including those with no invoice)', () => {
+  it('left joins Customers → Invoices (all customers including those with no invoice)', () => {
     const result = rows(`
       SELECT c.CustomerId, COUNT(i.InvoiceId) AS NumInvoices
-      FROM Customer c
-      LEFT JOIN Invoice i ON i.CustomerId = c.CustomerId
+      FROM Customers c
+      LEFT JOIN Invoices i ON i.CustomerId = c.CustomerId
       GROUP BY c.CustomerId
       ORDER BY c.CustomerId
     `);
     expect(result.length).toBe(10);
   });
 
-  it('joins Playlist → PlaylistTrack → Track', () => {
+  it('joins Playlists → playlist_track → Tracks', () => {
     const result = rows(`
       SELECT p.Name AS Playlist, COUNT(pt.TrackId) AS TrackCount
-      FROM Playlist p
-      JOIN PlaylistTrack pt ON pt.PlaylistId = p.PlaylistId
-      JOIN Track t ON t.TrackId = pt.TrackId
+      FROM Playlists p
+      JOIN playlist_track pt ON pt.PlaylistId = p.PlaylistId
+      JOIN Tracks t ON t.TrackId = pt.TrackId
       GROUP BY p.PlaylistId
       ORDER BY p.PlaylistId
     `);
@@ -310,7 +310,7 @@ describe('Chinook – aggregations', () => {
   it('counts tracks per album', () => {
     const result = rows(`
       SELECT AlbumId, COUNT(*) AS TrackCount
-      FROM Track
+      FROM Tracks
       GROUP BY AlbumId
       ORDER BY AlbumId
     `);
@@ -323,7 +323,7 @@ describe('Chinook – aggregations', () => {
   it('sums total sales per customer', () => {
     const result = rows(`
       SELECT CustomerId, ROUND(SUM(Total), 2) AS TotalSpent
-      FROM Invoice
+      FROM Invoices
       GROUP BY CustomerId
       ORDER BY TotalSpent DESC
       LIMIT 3
@@ -335,8 +335,8 @@ describe('Chinook – aggregations', () => {
   it('average track duration per genre', () => {
     const result = rows(`
       SELECT g.Name, ROUND(AVG(t.Milliseconds) / 1000.0, 1) AS AvgSeconds
-      FROM Track t
-      JOIN Genre g ON g.GenreId = t.GenreId
+      FROM Tracks t
+      JOIN Genres g ON g.GenreId = t.GenreId
       GROUP BY t.GenreId
       ORDER BY g.Name
     `);
@@ -347,7 +347,7 @@ describe('Chinook – aggregations', () => {
   it('finds the longest track', () => {
     const result = rows(`
       SELECT Name, Milliseconds
-      FROM Track
+      FROM Tracks
       ORDER BY Milliseconds DESC
       LIMIT 1
     `);
@@ -358,8 +358,8 @@ describe('Chinook – aggregations', () => {
   it('counts albums per artist, filtered to artists with >1 album', () => {
     const result = rows(`
       SELECT ar.Name, COUNT(al.AlbumId) AS Albums
-      FROM Artist ar
-      JOIN Album al ON al.ArtistId = ar.ArtistId
+      FROM Artists ar
+      JOIN Albums al ON al.ArtistId = ar.ArtistId
       GROUP BY ar.ArtistId
       HAVING Albums > 1
       ORDER BY ar.Name
@@ -373,7 +373,7 @@ describe('Chinook – aggregations', () => {
   it('total revenue per billing country', () => {
     const result = rows(`
       SELECT BillingCountry, ROUND(SUM(Total), 2) AS Revenue
-      FROM Invoice
+      FROM Invoices
       GROUP BY BillingCountry
       ORDER BY Revenue DESC
     `);
@@ -385,10 +385,10 @@ describe('Chinook – aggregations', () => {
 describe('Chinook – subqueries', () => {
   it('finds tracks on the "Music" playlist via subquery', () => {
     const result = rows(`
-      SELECT Name FROM Track
+      SELECT Name FROM Tracks
       WHERE TrackId IN (
-        SELECT TrackId FROM PlaylistTrack
-        WHERE PlaylistId = (SELECT PlaylistId FROM Playlist WHERE Name = 'Music')
+        SELECT TrackId FROM playlist_track
+        WHERE PlaylistId = (SELECT PlaylistId FROM Playlists WHERE Name = 'Music')
       )
       ORDER BY TrackId
     `);
@@ -398,9 +398,9 @@ describe('Chinook – subqueries', () => {
   it('finds customers who have spent more than the average invoice total', () => {
     const result = rows(`
       SELECT DISTINCT c.FirstName || ' ' || c.LastName AS Customer
-      FROM Customer c
-      JOIN Invoice i ON i.CustomerId = c.CustomerId
-      WHERE i.Total > (SELECT AVG(Total) FROM Invoice)
+      FROM Customers c
+      JOIN Invoices i ON i.CustomerId = c.CustomerId
+      WHERE i.Total > (SELECT AVG(Total) FROM Invoices)
       ORDER BY Customer
     `);
     expect(result.length).toBeGreaterThan(0);
@@ -409,10 +409,10 @@ describe('Chinook – subqueries', () => {
   it('finds artists with at least one track longer than 5 minutes', () => {
     const result = rows(`
       SELECT DISTINCT ar.Name
-      FROM Artist ar
+      FROM Artists ar
       WHERE ar.ArtistId IN (
-        SELECT al.ArtistId FROM Album al
-        JOIN Track t ON t.AlbumId = al.AlbumId
+        SELECT al.ArtistId FROM Albums al
+        JOIN Tracks t ON t.AlbumId = al.AlbumId
         WHERE t.Milliseconds > 300000
       )
       ORDER BY ar.Name
@@ -427,8 +427,8 @@ describe('Chinook – self-join & hierarchy', () => {
     const result = rows(`
       SELECT e.FirstName || ' ' || e.LastName AS Employee,
              m.FirstName || ' ' || m.LastName AS Manager
-      FROM Employee e
-      LEFT JOIN Employee m ON m.EmployeeId = e.ReportsTo
+      FROM Employees e
+      LEFT JOIN Employees m ON m.EmployeeId = e.ReportsTo
       ORDER BY e.EmployeeId
     `);
     expect(result.length).toBe(4);
@@ -442,8 +442,8 @@ describe('Chinook – self-join & hierarchy', () => {
     const result = rows(`
       SELECT m.FirstName || ' ' || m.LastName AS Manager,
              COUNT(e.EmployeeId) AS DirectReports
-      FROM Employee e
-      JOIN Employee m ON m.EmployeeId = e.ReportsTo
+      FROM Employees e
+      JOIN Employees m ON m.EmployeeId = e.ReportsTo
       GROUP BY m.EmployeeId
       ORDER BY DirectReports DESC
     `);
@@ -455,7 +455,7 @@ describe('Chinook – self-join & hierarchy', () => {
 describe('Chinook – string & date operations', () => {
   it('searches track names case-insensitively', () => {
     const result = rows(`
-      SELECT Name FROM Track
+      SELECT Name FROM Tracks
       WHERE LOWER(Name) LIKE '%rock%'
       ORDER BY Name
     `);
@@ -466,7 +466,7 @@ describe('Chinook – string & date operations', () => {
   it('extracts year from InvoiceDate', () => {
     const result = rows(`
       SELECT DISTINCT SUBSTR(InvoiceDate, 1, 4) AS Year
-      FROM Invoice
+      FROM Invoices
       ORDER BY Year
     `);
     expect(result.map((r) => r[0])).toContain('2009');
@@ -475,7 +475,7 @@ describe('Chinook – string & date operations', () => {
   it('concatenates customer full name', () => {
     const result = rows(`
       SELECT FirstName || ' ' || LastName AS FullName
-      FROM Customer
+      FROM Customers
       ORDER BY CustomerId
       LIMIT 1
     `);
@@ -488,7 +488,7 @@ describe('Chinook – window / ranking (SQLite 3.25+)', () => {
     const result = rows(`
       SELECT Name, GenreId, Milliseconds,
              RANK() OVER (PARTITION BY GenreId ORDER BY Milliseconds DESC) AS Rnk
-      FROM Track
+      FROM Tracks
       ORDER BY GenreId, Rnk
     `);
     expect(result.length).toBeGreaterThan(0);
@@ -501,7 +501,7 @@ describe('Chinook – window / ranking (SQLite 3.25+)', () => {
     const result = rows(`
       SELECT InvoiceId, Total,
              ROUND(SUM(Total) OVER (ORDER BY InvoiceId), 2) AS RunningTotal
-      FROM Invoice
+      FROM Invoices
       ORDER BY InvoiceId
     `);
     expect(result.length).toBeGreaterThan(0);
@@ -517,11 +517,11 @@ describe('Chinook – CTEs', () => {
     const result = rows(`
       WITH TrackSales AS (
         SELECT TrackId, SUM(Quantity) AS TotalQty
-        FROM InvoiceLine
+        FROM invoice_items
         GROUP BY TrackId
       )
       SELECT t.Name, ts.TotalQty
-      FROM Track t
+      FROM Tracks t
       JOIN TrackSales ts ON ts.TrackId = t.TrackId
       ORDER BY ts.TotalQty DESC
       LIMIT 5
@@ -534,11 +534,11 @@ describe('Chinook – CTEs', () => {
     const result = rows(`
       WITH CustomerLTV AS (
         SELECT CustomerId, ROUND(SUM(Total), 2) AS LTV
-        FROM Invoice
+        FROM Invoices
         GROUP BY CustomerId
       )
       SELECT c.FirstName || ' ' || c.LastName AS Customer, ltv.LTV
-      FROM Customer c
+      FROM Customers c
       JOIN CustomerLTV ltv ON ltv.CustomerId = c.CustomerId
       ORDER BY ltv.LTV DESC
     `);
