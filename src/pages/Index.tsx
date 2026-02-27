@@ -318,13 +318,8 @@ export default function Index() {
                   <Plus className="h-3 w-3" />
                 </button>
                 <div className="ml-auto pr-2 flex items-center gap-1">
-                  <span className="text-[10px] text-muted-foreground px-0.5">SQL</span>
                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setEditorFontSize(s => Math.max(10, s - 1))} title="Decrease query font size">A-</Button>
                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setEditorFontSize(s => Math.min(20, s + 1))} title="Increase query font size">A+</Button>
-                  <div className="w-px h-4 bg-border mx-0.5" />
-                  <span className="text-[10px] text-muted-foreground px-0.5">Out</span>
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setOutputFontSize(s => Math.max(10, s - 1))} title="Decrease output font size">A-</Button>
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setOutputFontSize(s => Math.min(20, s + 1))} title="Increase output font size">A+</Button>
                   <div className="w-px h-4 bg-border mx-0.5" />
                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => { navigator.clipboard.writeText(activeTab?.sql ?? ''); toast.success('Query copied'); }} title="Copy query to clipboard" disabled={!activeTab?.sql.trim()}>
                     <Copy className="h-3 w-3" />
@@ -340,7 +335,7 @@ export default function Index() {
                 )}
               </div>
               <div className="flex-1 overflow-hidden">
-                <ResultsPanel result={currentResult} fontSize={outputFontSize} />
+                <ResultsPanel result={currentResult} fontSize={outputFontSize} onFontSizeChange={setOutputFontSize} />
               </div>
             </>
           ) : (

@@ -8,11 +8,12 @@ import { toast } from 'sonner';
 interface ResultsPanelProps {
   result: QueryResult | null;
   fontSize?: number;
+  onFontSizeChange?: (updater: (prev: number) => number) => void;
 }
 
 type ViewMode = 'table' | 'chart';
 
-export function ResultsPanel({ result, fontSize = 13 }: ResultsPanelProps) {
+export function ResultsPanel({ result, fontSize = 13, onFontSizeChange }: ResultsPanelProps) {
   const [view, setView] = useState<ViewMode>('table');
 
   if (!result) {
@@ -111,6 +112,13 @@ export function ResultsPanel({ result, fontSize = 13 }: ResultsPanelProps) {
         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={downloadJSON}>
           <Download className="h-3 w-3 mr-1" /> JSON
         </Button>
+        {onFontSizeChange && (
+          <>
+            <div className="w-px h-4 bg-border mx-1" />
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => onFontSizeChange(s => Math.max(10, s - 1))} title="Decrease output font size">A-</Button>
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => onFontSizeChange(s => Math.min(20, s + 1))} title="Increase output font size">A+</Button>
+          </>
+        )}
         {canChart && (
           <>
             <div className="w-px h-4 bg-border mx-1" />
