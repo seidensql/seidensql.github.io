@@ -120,7 +120,7 @@ export function ResultsPanel({ result, fontSize = 13, onFontSizeChange }: Result
               size="sm"
               className="h-7 text-xs"
               onClick={() => setView('chart')}
-              title="Chart view"
+              title="Mind-expander view"
             >
               <BarChart3 className="h-3 w-3" />
             </Button>
