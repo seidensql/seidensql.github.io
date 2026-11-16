@@ -89,21 +89,6 @@ export default function Index() {
     });
   };
 
-  const createNewDatabase = async () => {
-    const name = `db-${databases.length + 1}`;
-    await sqlite.openEmpty();
-    const data = sqlite.exportData();
-    if (!data) return;
-    const db: DatabaseInfo = { id: genId(), name, data, createdAt: Date.now(), updatedAt: Date.now() };
-    await saveDatabase(db);
-    setDatabases(prev => [...prev, db]);
-    const tab: QueryTab = { id: genId(), dbId: db.id, title: 'Query 1', sql: '' };
-    setTabs(prev => [...prev, tab]);
-    setActiveDbId(db.id);
-    setActiveTabId(tab.id);
-    toast.success(`Created "${name}"`);
-  };
-
   const uploadDatabase = async () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -252,8 +237,8 @@ export default function Index() {
     <div className="flex flex-col h-screen bg-background text-foreground">
       {/* Header */}
       <header className="flex items-center gap-3 px-4 py-2 border-b border-border bg-card">
-        <h1 className="text-sm font-bold tracking-tight text-foreground">
-          <Database className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+        <h1 className="text-sm font-bold tracking-tight text-foreground flex items-center">
+          <img src="/marc-face.png" alt="Marc" className="h-4 w-4 mr-1.5 rounded-full object-cover" />
           SeidenSQL
         </h1>
         <div className="flex items-center gap-1 ml-4">
@@ -275,9 +260,6 @@ export default function Index() {
             </button>
           ))}
         </div>
-        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={createNewDatabase}>
-          <Plus className="h-3 w-3 mr-1" /> New
-        </Button>
         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={uploadDatabase} disabled={uploading}>
           {uploading ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Upload className="h-3 w-3 mr-1" />} Open
         </Button>
@@ -360,13 +342,12 @@ export default function Index() {
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-4">
-                <Database className="h-12 w-12 mx-auto text-muted-foreground/50" />
+                <img src="/marc-face.png" alt="Marc" className="h-12 w-12 mx-auto rounded-full object-cover opacity-50" />
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">SeidenSQL</h2>
                   <p className="text-sm text-muted-foreground mt-1">Locally sourced, artisanal SQL queries. Load a DB to get started.</p>
                 </div>
                 <div className="flex gap-3 justify-center">
-                  <Button onClick={createNewDatabase}><Plus className="h-4 w-4 mr-2" /> New Database</Button>
                   <Button variant="outline" onClick={uploadDatabase}><Upload className="h-4 w-4 mr-2" /> Open File</Button>
                 </div>
               </div>

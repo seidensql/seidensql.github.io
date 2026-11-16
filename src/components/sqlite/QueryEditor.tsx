@@ -23,21 +23,21 @@ const baseTheme = EditorView.theme({
     padding: '8px 0',
   },
   '.cm-gutters': {
-    backgroundColor: 'hsl(210 40% 96.1%)',
-    borderRight: '1px solid hsl(214.3 31.8% 91.4%)',
-    color: 'hsl(215.4 16.3% 46.9%)',
+    backgroundColor: 'hsl(var(--muted))',
+    borderRight: '1px solid hsl(var(--border))',
+    color: 'hsl(var(--muted-foreground))',
   },
   '.cm-activeLineGutter': {
-    backgroundColor: 'hsl(210 40% 93%)',
+    backgroundColor: 'hsl(var(--accent))',
   },
   '.cm-activeLine': {
-    backgroundColor: 'hsl(210 40% 97%)',
+    backgroundColor: 'hsl(var(--accent) / 0.3)',
   },
   '.cm-selectionBackground': {
-    backgroundColor: 'hsl(222.2 47.4% 11.2% / 0.1) !important',
+    backgroundColor: 'hsl(var(--primary) / 0.1) !important',
   },
   '&.cm-focused .cm-selectionBackground': {
-    backgroundColor: 'hsl(222.2 47.4% 11.2% / 0.15) !important',
+    backgroundColor: 'hsl(var(--primary) / 0.15) !important',
   },
 });
 

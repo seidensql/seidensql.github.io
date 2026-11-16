@@ -181,15 +181,15 @@ export function ResultsPanel({ result, fontSize = 13, onFontSizeChange }: Result
             <ResponsiveContainer width="100%" height="100%">
               {numericCols.length === 1 ? (
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(214.3 31.8% 91.4%)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey={labelCol || columns[0]} tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey={numericCols[0]} fill="hsl(222.2 47.4% 11.2%)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey={numericCols[0]} fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
                 </BarChart>
               ) : (
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(214.3 31.8% 91.4%)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey={labelCol || columns[0]} tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
@@ -198,7 +198,7 @@ export function ResultsPanel({ result, fontSize = 13, onFontSizeChange }: Result
                       key={col}
                       type="monotone"
                       dataKey={col}
-                      stroke={['hsl(222 47% 11%)', 'hsl(210 80% 50%)', 'hsl(150 60% 40%)', 'hsl(30 80% 50%)', 'hsl(0 70% 50%)'][i]}
+                      stroke={['hsl(var(--primary))', 'hsl(210 80% 50%)', 'hsl(150 60% 40%)', 'hsl(30 80% 50%)', 'hsl(0 70% 50%)'][i]}
                       strokeWidth={2}
                       dot={false}
                     />
