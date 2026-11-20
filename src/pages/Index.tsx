@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSqlite } from '@/hooks/use-sqlite';
 import { SchemaPanel } from '@/components/sqlite/SchemaPanel';
 import { QueryEditor } from '@/components/sqlite/QueryEditor';
+import type { QueryEditorHandle } from '@/components/sqlite/QueryEditor';
 import { ResultsPanel } from '@/components/sqlite/ResultsPanel';
 import { HistoryPanel } from '@/components/sqlite/HistoryPanel';
 import {
@@ -28,6 +29,8 @@ import {
   PanelLeft,
   Clock,
   Copy,
+  Undo2,
+  Redo2,
   Loader2,
   Moon,
   Sun,
@@ -51,6 +54,9 @@ export default function Index() {
 
   const [showSchema, setShowSchema] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const editorRef = useRef<QueryEditorHandle | null>(null);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
   const [editorFontSize, setEditorFontSize] = useState(13);
   const [outputFontSize, setOutputFontSize] = useState(13);
 
@@ -73,6 +79,11 @@ export default function Index() {
     setHistoryState(h);
     setSaved(s);
   };
+
+  const handleHistoryChange = useCallback((canUndo: boolean, canRedo: boolean) => {
+    setCanUndo(canUndo);
+    setCanRedo(canRedo);
+  }, []);
 
   const switchDatabase = async (db: DatabaseInfo) => {
     setActiveDbId(db.id);
@@ -313,13 +324,19 @@ export default function Index() {
                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setEditorFontSize(s => Math.max(10, s - 1))} title="Decrease query font size">A-</Button>
                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-bold" onClick={() => setEditorFontSize(s => Math.min(40, s + 1))} title="Increase query font size">A+</Button>
                   <div className="w-px h-4 bg-border mx-0.5" />
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => editorRef.current?.undo()} title="Undo" disabled={!canUndo}>
+                    <Undo2 className="h-3 w-3" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => editorRef.current?.redo()} title="Redo" disabled={!canRedo}>
+                    <Redo2 className="h-3 w-3" />
+                  </Button>
                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => { navigator.clipboard.writeText(activeTab?.sql ?? ''); toast.success('Query copied'); }} title="Copy query to clipboard" disabled={!activeTab?.sql.trim()}>
                     <Copy className="h-3 w-3" />
                   </Button>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button size="sm" className="h-7 text-xs" onClick={executeQuery} disabled={!activeTab?.sql.trim()}>
-                        <Play className="h-3 w-3 mr-1" /> Run
+                        <Play className="h-3 w-3 mr-1" /> Run Query
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="text-center">
@@ -332,7 +349,7 @@ export default function Index() {
               </div>
               <div className="h-[40%] min-h-[120px] border-b border-border">
                 {activeTab && (
-                  <QueryEditor value={activeTab.sql} onChange={updateTabSql} onExecute={executeQuery} error={currentResult?.error} fontSize={editorFontSize} />
+                  <QueryEditor ref={editorRef} value={activeTab.sql} onChange={updateTabSql} onExecute={executeQuery} error={currentResult?.error} fontSize={editorFontSize} onHistoryChange={handleHistoryChange} />
                 )}
               </div>
               <div className="flex-1 overflow-hidden">

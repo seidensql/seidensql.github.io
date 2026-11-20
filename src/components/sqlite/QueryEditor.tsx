@@ -1,8 +1,8 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { EditorState, Compartment } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
 import { sql, SQLite } from '@codemirror/lang-sql';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap, undo, redo, undoDepth, redoDepth } from '@codemirror/commands';
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching } from '@codemirror/language';
 import { closeBrackets } from '@codemirror/autocomplete';
 
@@ -12,6 +12,12 @@ interface QueryEditorProps {
   onExecute: () => void;
   error?: string;
   fontSize?: number;
+  onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
+}
+
+export interface QueryEditorHandle {
+  undo: () => void;
+  redo: () => void;
 }
 
 const baseTheme = EditorView.theme({
@@ -45,14 +51,33 @@ function fontSizeTheme(size: number) {
   return EditorView.theme({ '&': { fontSize: `${size}px` } });
 }
 
-export function QueryEditor({ value, onChange, onExecute, error, fontSize = 13 }: QueryEditorProps) {
+export const QueryEditor = forwardRef<QueryEditorHandle, QueryEditorProps>(({ value, onChange, onExecute, error, fontSize = 13, onHistoryChange }: QueryEditorProps, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const fontSizeCompartment = useRef(new Compartment());
   const onChangeRef = useRef(onChange);
   const onExecuteRef = useRef(onExecute);
+  const onHistoryChangeRef = useRef(onHistoryChange);
   onChangeRef.current = onChange;
   onExecuteRef.current = onExecute;
+  onHistoryChangeRef.current = onHistoryChange;
+
+  useImperativeHandle<QueryEditorHandle, QueryEditorHandle>(ref, () => ({
+    undo: () => {
+      const view = viewRef.current;
+      if (!view) return;
+      // `undo`/`redo` from @codemirror/commands are StateCommands: they take a
+      // { state, dispatch } target and return whether an undo/redo happened.
+      const ok = undo({ state: view.state, dispatch: (tr) => view.dispatch(tr) });
+      if (ok) view.focus();
+    },
+    redo: () => {
+      const view = viewRef.current;
+      if (!view) return;
+      const ok = redo({ state: view.state, dispatch: (tr) => view.dispatch(tr) });
+      if (ok) view.focus();
+    },
+  }));
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -87,6 +112,9 @@ export function QueryEditor({ value, onChange, onExecute, error, fontSize = 13 }
           if (update.docChanged) {
             onChangeRef.current(update.state.doc.toString());
           }
+          const canUndo = undoDepth(update.state) > 0;
+          const canRedo = redoDepth(update.state) > 0;
+          onHistoryChangeRef.current?.(canUndo, canRedo);
         }),
         EditorView.lineWrapping,
       ],
@@ -134,4 +162,6 @@ export function QueryEditor({ value, onChange, onExecute, error, fontSize = 13 }
       )}
     </div>
   );
-}
+});
+
+QueryEditor.displayName = 'QueryEditor';
