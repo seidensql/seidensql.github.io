@@ -3,8 +3,9 @@ import { EditorState, Compartment } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
 import { sql, SQLite } from '@codemirror/lang-sql';
 import { defaultKeymap, history, historyKeymap, undo, redo, undoDepth, redoDepth } from '@codemirror/commands';
-import { syntaxHighlighting, defaultHighlightStyle, bracketMatching } from '@codemirror/language';
+import { syntaxHighlighting, bracketMatching, HighlightStyle } from '@codemirror/language';
 import { closeBrackets } from '@codemirror/autocomplete';
+import { tags } from '@lezer/highlight';
 
 interface QueryEditorProps {
   value: string;
@@ -50,6 +51,15 @@ const baseTheme = EditorView.theme({
 function fontSizeTheme(size: number) {
   return EditorView.theme({ '&': { fontSize: `${size}px` } });
 }
+
+const sqlHighlightStyle = HighlightStyle.define([
+  { tag: tags.keyword, color: '#708' },
+  { tag: tags.function, color: '#708' },
+  { tag: tags.string, color: '#a11' },
+  { tag: tags.comment, color: '#940' },
+  { tag: tags.number, color: '#164' },
+  { tag: tags.typeName, color: '#085' },
+]);
 
 export const QueryEditor = forwardRef<QueryEditorHandle, QueryEditorProps>(({ value, onChange, onExecute, error, fontSize = 13, onHistoryChange }: QueryEditorProps, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -104,7 +114,7 @@ export const QueryEditor = forwardRef<QueryEditorHandle, QueryEditorProps>(({ va
         bracketMatching(),
         closeBrackets(),
         sql({ dialect: SQLite }),
-        syntaxHighlighting(defaultHighlightStyle),
+        syntaxHighlighting(sqlHighlightStyle),
         keymap.of([...defaultKeymap, ...historyKeymap]),
         baseTheme,
         fontSizeCompartment.current.of(fontSizeTheme(fontSize)),
